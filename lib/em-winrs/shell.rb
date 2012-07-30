@@ -63,15 +63,16 @@ module EventMachine
 	    transport = " -usessl"
 	  end
 	end
-        winrs_command = "winrs -R:#{server.host} #{transport} #{creds} \"#{command}\" 2>&1"
+        winrs_command = "winrs -r:#{server.host} #{transport} #{creds} \"#{command}\""
         WinRS::Log.debug("Executing #{winrs_command}")
-        output = IO.popen(winrs_command).read
+        output = `#{winrs_command}`
+	exit_code  = $?.exitstatus
         #XXX Using IO, we cannot capture stderr seperately 
         @out_channel.push(output)
         #XXX We dont know the exit status
-        @last_exit_code = 0
+        @last_exit_code = exit_code
 	@on_close.call(@last_exit_code)
-	0
+	exit_code
       end
     end
   end
