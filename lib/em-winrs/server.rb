@@ -23,7 +23,7 @@ module EventMachine
     class Server
       include EM::Deferrable
 
-      attr_accessor :master, :host
+      attr_accessor :master, :host, :options, :transport
 
       def initialize(master, host, options)
         @master = master
@@ -52,7 +52,7 @@ module EventMachine
             @shell.on_error do |error|
               @master.relay_error_from_backend(@host, error)
             end
-            @shell.on_close do |result, exit_code|
+            @shell.on_close do |exit_code|
               @master.command_complete(@host, cid, exit_code)
             end
             @shell.run_command(data)

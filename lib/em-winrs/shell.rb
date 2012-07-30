@@ -55,14 +55,23 @@ module EventMachine
       # Open a shell and run a comamnd
       #
       def run_command(command)
-        winrs_command = "winrs -R:#{server.host} \"#{command}\" 2>&1"
+	creds = ""
+	transport = ""
+        if server.options[:user] and server.options[:pass]
+	  creds = " -u:#{server.options[:user]} -p:#{server.options[:pass]} "
+	  if server.transport != :plaintext
+	    transport = " -usessl"
+	  end
+	end
+        winrs_command = "winrs -R:#{server.host} #{transport} #{creds} \"#{command}\" 2>&1"
         WinRS::Log.debug("Executing #{winrs_command}")
         output = IO.popen(winrs_command).read
         #XXX Using IO, we cannot capture stderr seperately 
-        @out_channel.push(out) if output
+        @out_channel.push(output)
         #XXX We dont know the exit status
         @last_exit_code = 0
-        0
+	@on_close.call(@last_exit_code)
+	0
       end
     end
   end
